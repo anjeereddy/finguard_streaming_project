@@ -1,0 +1,37 @@
+name: Build and Deploy WHL
+on:
+  push:
+    branches: [ main ]
+
+jobs:
+  build-deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v3
+
+      # 🚀 Install NEW Databricks CLI (RELIABLE WAY)
+      - name: Install Databricks CLI
+        run: |
+          curl -fsSL https://raw.githubusercontent.com/databricks/setup-cli/main/install.sh | sh
+          databricks --version   # ✅ verify installation
+
+      # 🔍 Validate Databricks Access
+      - name: Validate Databricks Connection
+        run: |
+          databricks auth describe
+        env:
+          DATABRICKS_HOST: ${{ secrets.DATABRICKS_HOST }}
+          DATABRICKS_TOKEN: ${{ secrets.DATABRICKS_TOKEN }}
+
+            # 4. Deploy the complete folder and its contents
+      - name: Deploy Databricks Notebooks and Pipelines
+        run: |
+          databricks workspace import-dir \
+            "./databricks notebooks and pipelines" \
+            "/Shared/finguard_streaming_project/databricks notebooks and pipelines" \
+            --overwrite
+        env:
+          DATABRICKS_HOST: ${{ secrets.DATABRICKS_HOST }}
+          DATABRICKS_TOKEN: ${{ secrets.DATABRICKS_TOKEN }}
